@@ -8,6 +8,7 @@
 
 using namespace std;
 
+// We are creating global variables. These will be implemented all througout the program and are made global in the main.h file.
 int n;
 int m;
 int MAX;
@@ -40,7 +41,6 @@ int main()
 
     // We convert x and y into integers for the vertices (n), and the edges (m).
     n = stoi(x);
-    MAX = 1;
     m = stoi(y);
 
     // We create and initialize an array of adjacency lists, one for each vertex.
@@ -50,18 +50,13 @@ int main()
         list[i] = nullptr;
     }
 
-    // We create an array of edges and vertices based off the amount that has been inputted by the user. This will be used in the actual graph implementation.
-    Edge **edges = new Edge*[m];
-    for(int i = 0; i < m; i++)
+    // We are creating an array of Edge structs and Vertex structs. These will be used to create a Graph struct.
+    Edge *edges = new Edge[m];
+    Vertex *vertices = new Vertex[n];
+    for(int i = 0; i < n; i ++)
     {
-        edges[i] = nullptr;
-    }
-
-    Vertex **vertices = new Vertex*[n];
-    for(int i = 0; i < n; i++)
-    {
-        vertices[i] = new Vertex();
-        vertices[i]->num = (i + 1);
+        // We assign each vertex a number.
+        vertices[i].num = (i + 1);
     }
 
     // The for loop will iterate m times for the amount of edges that we have.
@@ -106,25 +101,14 @@ int main()
         int v = stoi(b);
         int w = stoi(c);
 
-        edges[i] = new Edge();
+        // We initialize all the values of our edges such as the values for u, v, and weight.
+        edges[i].u = u;
+        edges[i].v = v;
+        edges[i].weight = w;
 
-        edges[i]->u = u;
-        edges[i]->v = v;
-        edges[i]->weight = w;
-
+        // We insert these edges into our adjacency list.
         insertAtHead(&list[u - 1], v, w);
     }
-
-    auto *G = new Graph();
-    G->edges = edges;
-    G->vertices = vertices;
-
-    auto *s = new Vertex();
-    s->num = 1;
-
-    int num = 0;
-
-    Dijkstra(G, s, num);
 
     // We continue reading the file until it reads stop.
     while(!cin.eof())
@@ -177,9 +161,15 @@ int main()
         // If the command is equal to write, then the adjacency list is printed out for every vertex.
         if(command == "write")
         {
+            cout << "Command: write" << endl;
+
+            // the amount of vertices and edges are printed.
+            cout << n << " " << m << endl;
+
+            // We print the adjacency list using the printList() function.
             for(int i = 0; i < n; i++)
             {
-                cout << "Vertex " << (i + 1) << ": ";
+                cout << (i + 1) << " : ";
                 printList(list[i]);
             }
         }
@@ -192,12 +182,16 @@ int main()
         // If the program goes here, that means that the find command has been called.
         else if(command == "find")
         {
+            // The global variable MAX is initialized to one so that the queue in dijkstra's algorithm has at least one element.
+            MAX = 1;
+
             // Since the find command was called, we know that the strings first, last, and bin were initialized. We now convert those values into integers.
             int start = stoi(first);
             int end = stoi(last);
             int flag = stoi(bin);
 
-            cout << command << " " << start << " " << end << " " << flag << endl;
+            // The command is printed.
+            cout << "Command: " << line << endl;
 
             // If any of these conditions are met, it means that the user is trying to find the shortest distance from a starting vertex or end vertex that does not exist.
             if(end > n || end < 1 || start < 1 || start > n)
@@ -216,14 +210,137 @@ int main()
                 // We check to see which flag value the user inputs. This will determine if we print just the distance, or the actual path. If neither, an error message is printed.
                 if(flag == 0)
                 {
+                    // If the requested vertices are the same, that means that the path is simply the node itself.
+                    if(start == end)
+                    {
+                        cout << "Path: " << start << endl;
+                    }
+                    else
+                    {
+                        // We create a Graph struct which we initialize with out edges and vertices array.
+                        auto *G = new Graph();
+                        G->edges = edges;
+                        G->vertices = vertices;
 
+                        // We create a Vertex struct which will be our starting node.
+                        auto *s = new Vertex();
+                        s->num = start;
+
+                        // An array of vertices SSS is created which will contain the shortest path to the ending vertex.
+                        auto *SSS = new Vertex[n];
+
+                        // We call Dijkstra(), and have it return a vertex array containing the shortest path to each node.
+                        SSS = Dijkstra(G, s);
+
+                        // The variable length will be set to zero, and we will initialize it to the length of the shortest path by using a loop.
+                        int length = 0;
+                        for(int i = n; i > 0; i--)
+                        {
+                            // If we have found the ending vertex, we set the length to the distance of the vertex node.
+                            if(SSS[i].num == end)
+                            {
+                                length = SSS[i].dist;
+                            }
+                        }
+
+                        // If the length is 999, that means that the node is unreachable, therefore we print an error message.
+                        if(length == 999)
+                        {
+                            cout << "Error: node " << end << " not reachable from node " << start << endl;
+                        }
+                        else
+                        {
+                            // If the node is reachable, we will create an array of integers that will hold the vertex numbers.
+                            int *arr = new int[25];
+
+                            // Increment will be used to add a new value into the arr array.
+                            int increment = 0;
+
+                            // This for loop will move backwards so that we can find the ending vertex, and go to the predecessor of that vertex.
+                            for(int i = n; i > 0; i--)
+                            {
+                                if(SSS[i].num == end)
+                                {
+                                    // We set this vertex number to the array, increment variable increment, and set end to the predecessor of the vertex.
+                                    arr[increment] = SSS[i].num;
+                                    increment++;
+                                    end = SSS[i].pred;
+                                }
+                            }
+
+                            // The last element of the array is the starting index.
+                            arr[increment] = start;
+
+                            // We print the path by using an array incrementing backwards, so that we print the path from thr starting vertex to the ending vertex.
+                            cout << "Path: ";
+                            for(int i = increment; i > 0; i--)
+                            {
+                                cout << arr[i] << ";";
+                            }
+                            cout << arr[0] << endl;
+
+                            delete[] arr;
+                        }
+
+                        delete[] SSS;
+                        delete G;
+                    }
                 }
                 else if(flag == 1)
                 {
 
+                    // If the requested vertices are the same, that means that the length is 0.
+                    if(start == end)
+                    {
+                        cout << "Length: 0" << endl;
+                    }
+                    else
+                    {
+                        // We create a Graph struct which we initialize with out edges and vertices array.
+                        auto *G = new Graph();
+                        G->edges = edges;
+                        G->vertices = vertices;
+
+                        // We create a Vertex struct which will be our starting node.
+                        auto *s = new Vertex();
+                        s->num = start;
+
+                        // An array of vertices SSS is created which will contain the shortest path to the ending vertex.
+                        auto *SSS = new Vertex[n];
+
+                        // We call Dijkstra(), and have it return a vertex array containing the shortest path to each node.
+                        SSS = Dijkstra(G, s);
+
+                        // The variable length will be set to zero, and we will initialize it to the length of the shortest path by using a loop.
+                        int length = 0;
+
+                        // We capture the length of the path by finding the distance of the ending vertex.
+                        for(int i = n; i > 0; i--)
+                        {
+                            if(SSS[i].num == end)
+                            {
+                               length = SSS[i].dist;
+                            }
+                        }
+
+                        // If the length is 999, that means that the path is unreachable from the starting node.
+                        if(length == 999)
+                        {
+                            cout << "Error: node " << end << " not reachable from node " << start << endl;
+                        }
+                        else
+                        {
+                            // We print the length of the path.
+                            cout << "Length: " << length << endl;
+                        }
+
+                        delete[] SSS;
+                        delete G;
+                    }
                 }
                 else
                 {
+                    // If the nodes are valid but the flag value is incorrect, we will go to here.
                     cout << "Error: invalid flag value" << endl;
                 }
             }

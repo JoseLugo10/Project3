@@ -5,11 +5,7 @@
 
 void INIT_SINGLE_SOURCE(Graph *G, Vertex *s);
 
-int arrSize(Vertex **v);
+void Relax(Vertex* u, Vertex &v, Edge w);
 
-int arrAmount(Edge **e);
-
-void Relax(Vertex* u, Vertex &v, Edge *w);
-
-void Dijkstra(Graph *G, Vertex *s, int i);
+Vertex* Dijkstra(Graph *G, Vertex *s);
 #endif //PROJECT3_UTIL_H

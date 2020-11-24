@@ -10,6 +10,6 @@ void minHeapify(Vertex* &Q, int m, int n);
 
 void buildHeap(Vertex* &Q, int n);
 
-void DecreaseKey(Vertex* &Q, Vertex *v, int distance);
+void DecreaseKey(Vertex* &Q, Vertex v, int distance);
 
 #endif //PROJECT3_HEAP_H

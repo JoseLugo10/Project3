@@ -24,8 +24,8 @@ struct adjList
 
 struct Graph
 {
-    struct Vertex **vertices;
-    struct Edge **edges;
+    struct Vertex *vertices;
+    struct Edge *edges;
 };
 
 void insertAtHead(adjList **list, int v, int weight);
